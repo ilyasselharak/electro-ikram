@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { ChevronDown, Menu, Phone, Package, BadgePercent, Mail } from "lucide-react";
+import { ChevronDown, Menu, Phone, Package, BadgePercent, Mail, Heart, UserRound } from "lucide-react";
+import { useAccount } from "@/hooks/use-account";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
 import type { CategoryNode } from "@/lib/categories";
@@ -17,6 +18,7 @@ export function MobileMenu({ tree, phone }: { tree: CategoryNode[]; phone?: stri
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const close = () => setOpen(false);
+  const me = useAccount();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -89,6 +91,16 @@ export function MobileMenu({ tree, phone }: { tree: CategoryNode[]; phone?: stri
           </ul>
           <div className="my-3 border-t" />
           <ul className="space-y-0.5 text-[15px]">
+            <li>
+              <Link href={me ? "/account" : "/account/login"} onClick={close} className="flex items-center gap-3 rounded-lg px-2 py-2.5 font-medium hover:bg-accent">
+                <UserRound className="size-5 text-muted-foreground" /> {me ? t("header.account") : t("header.login")}
+              </Link>
+            </li>
+            <li>
+              <Link href={me ? "/account?tab=wishlist" : "/account/login"} onClick={close} className="flex items-center gap-3 rounded-lg px-2 py-2.5 hover:bg-accent">
+                <Heart className="size-5 text-muted-foreground" /> {t("header.wishlist")}
+              </Link>
+            </li>
             <li>
               <Link href="/offers" onClick={close} className="flex items-center gap-3 rounded-lg px-2 py-2.5 font-medium text-sale hover:bg-accent">
                 <BadgePercent className="size-5" /> {t("header.offers")}

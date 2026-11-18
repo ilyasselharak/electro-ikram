@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "convex/react";
 import { useLocale, useTranslations } from "next-intl";
-import { Banknote, Loader2, Lock, ShoppingBag } from "lucide-react";
+import { Banknote, Loader2, Lock, MapPin, ShoppingBag, UserRound } from "lucide-react";
+import { useAccount } from "@/hooks/use-account";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { api } from "@convex/_generated/api";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -29,7 +31,14 @@ export function CheckoutForm() {
   const clear = useCart((s) => s.clear);
   const setCoupon = useCart((s) => s.setCoupon);
   const createOrder = useMutation(api.orders.create);
+  const saveAddress = useMutation(api.account.saveAddress);
+  const me = useAccount();
   const [submitting, setSubmitting] = useState(false);
+  // undefined = untouched: the default saved address (pre-filled below) counts as selected.
+  const [chosenAddress, setAddressId] = useState<string | null | undefined>(undefined);
+  const defaultAddress = me ? (me.addresses.find((x) => x.isDefault) ?? me.addresses[0]) : undefined;
+  const addressId = chosenAddress === undefined ? (defaultAddress?.id ?? null) : chosenAddress;
+  const [saveToAccount, setSaveToAccount] = useState(true);
 
   const schema = z.object({
     fullName: z.string().trim().min(3, t("validation.min", { count: 3 })).max(120, t("validation.max", { count: 120 })),
@@ -48,6 +57,33 @@ export function CheckoutForm() {
   });
   const { register, handleSubmit, formState } = form;
   const err = formState.errors;
+
+  // Signed-in customers: pre-fill once with their default address and profile.
+  const prefilled = useRef(false);
+  useEffect(() => {
+    if (!me || prefilled.current) return;
+    prefilled.current = true;
+    const a = me.addresses.find((x) => x.isDefault) ?? me.addresses[0];
+    const cur = form.getValues();
+    form.reset({
+      ...cur,
+      fullName: cur.fullName || a?.fullName || me.name,
+      phone: cur.phone || a?.phone || me.phone,
+      city: cur.city || a?.city || "",
+      address: cur.address || a?.address || "",
+      email: cur.email || me.email,
+    });
+  }, [me, form]);
+
+  const pickSaved = (id: string) => {
+    const a = me?.addresses.find((x) => x.id === id);
+    if (!a) return;
+    setAddressId(id);
+    form.setValue("fullName", a.fullName, { shouldValidate: true });
+    form.setValue("phone", a.phone, { shouldValidate: true });
+    form.setValue("city", a.city, { shouldValidate: true });
+    form.setValue("address", a.address, { shouldValidate: true });
+  };
 
   if (!totals.hydrated) {
     return (
@@ -86,6 +122,10 @@ export function CheckoutForm() {
         couponCode: totals.coupon?.valid ? totals.couponCode ?? undefined : undefined,
         locale,
       });
+      // Remember a new address in the account (best effort, never blocks the order).
+      if (me && saveToAccount && !addressId && me.addresses.length < 5) {
+        saveAddress({ fullName: values.fullName, phone: values.phone, city: values.city, address: values.address }).catch(() => {});
+      }
       router.replace(`/order-confirmation?n=${encodeURIComponent(res.orderNumber)}&t=${res.accessToken}`);
       clear();
     } catch (e) {
@@ -102,8 +142,44 @@ export function CheckoutForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid items-start gap-8 lg:grid-cols-[1fr_400px]">
       <div className="space-y-6">
+        {me === null && (
+          <Link
+            href="/account/login?next=/checkout"
+            className="flex items-center gap-3 rounded-2xl border border-primary/25 bg-accent/60 p-4 text-sm hover:border-primary/50"
+          >
+            <UserRound className="size-5 shrink-0 text-primary" />
+            <span className="flex-1">{t("account.loginForFaster")}</span>
+            <span className="font-semibold text-primary">{t("header.login")}</span>
+          </Link>
+        )}
         <section className="rounded-2xl border p-5 sm:p-7">
           <h2 className="text-lg font-bold text-navy">{t("checkout.contactInfo")}</h2>
+          {me && <p className="mt-1 text-sm text-muted-foreground">{t("account.signedInAs", { email: me.email })}</p>}
+          {me && me.addresses.length > 0 && (
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-medium">{t("account.useAddress")}</p>
+              <div className="flex flex-wrap gap-2">
+                {me.addresses.map((a) => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => pickSaved(a.id)}
+                    aria-pressed={addressId === a.id}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl border px-3 py-2 text-start text-sm transition",
+                      addressId === a.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:border-primary/40",
+                    )}
+                  >
+                    <MapPin className="size-4 shrink-0 text-primary" />
+                    <span>
+                      <span className="block font-semibold">{a.label || a.city}</span>
+                      <span className="block max-w-48 truncate text-xs text-muted-foreground">{a.address}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <Field label={t("checkout.fullName")} htmlFor="fullName" error={err.fullName?.message} required className="sm:col-span-2">
               <input id="fullName" autoComplete="name" className={inputClass} aria-invalid={!!err.fullName} {...register("fullName")} />
@@ -122,6 +198,7 @@ export function CheckoutForm() {
             <Field label={t("checkout.address")} htmlFor="address" error={err.address?.message} required className="sm:col-span-2">
               <textarea
                 id="address"
+                onInput={() => setAddressId(null)}
                 rows={2}
                 autoComplete="street-address"
                 placeholder={t("checkout.addressPlaceholder")}
@@ -130,6 +207,12 @@ export function CheckoutForm() {
                 {...register("address")}
               />
             </Field>
+            {me && !addressId && me.addresses.length < 5 && (
+              <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                <input type="checkbox" checked={saveToAccount} onChange={(e) => setSaveToAccount(e.target.checked)} className="size-4 accent-[var(--primary)]" />
+                {t("account.saveAddress")}
+              </label>
+            )}
             <Field label={t("checkout.email")} htmlFor="email" error={err.email?.message} className="sm:col-span-2">
               <input id="email" type="email" autoComplete="email" dir="ltr" className={`${inputClass} rtl:text-right`} aria-invalid={!!err.email} {...register("email")} />
             </Field>

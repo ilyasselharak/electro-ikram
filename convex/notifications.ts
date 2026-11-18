@@ -13,9 +13,9 @@ export const list = query({
       .query("adminNotifications")
       .withIndex("by_read", (q) => q.eq("isRead", false))
       .collect();
-    const visible = user.role === "editor" ? unread.filter((n) => n.kind === "stock") : unread;
+    const visible = user.role === "editor" ? unread.filter((n) => n.kind === "stock" || n.kind === "review") : unread;
     const recent = await ctx.db.query("adminNotifications").order("desc").take(20);
-    const items = user.role === "editor" ? recent.filter((n) => n.kind === "stock") : recent;
+    const items = user.role === "editor" ? recent.filter((n) => n.kind === "stock" || n.kind === "review") : recent;
     return { items, unread: visible.length };
   },
 });

@@ -14,6 +14,7 @@ import {
   type SortKey,
 } from "./lib/catalog";
 import { clean, dayKey, requireText, roundMoney, slugify } from "./lib/utils";
+import { logStock } from "./lib/stock";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Public                                   */
@@ -521,16 +522,18 @@ export const adminGetMany = query({
 export const create = mutation({
   args: productInput,
   handler: async (ctx, args) => {
-    await requirePermission(ctx, "catalog");
+    const user = await requirePermission(ctx, "catalog");
     const data = await normalizeInput(ctx, args);
-    return ctx.db.insert("products", { ...data, salesCount: 0, viewCount: 0 });
+    const id = await ctx.db.insert("products", { ...data, salesCount: 0, viewCount: 0 });
+    await logStock(ctx, { productId: id, delta: data.stock, stockAfter: data.stock, reason: "initial", userId: user._id });
+    return id;
   },
 });
 
 export const update = mutation({
   args: { id: v.id("products"), ...productInput },
   handler: async (ctx, { id, ...args }) => {
-    await requirePermission(ctx, "catalog");
+    const user = await requirePermission(ctx, "catalog");
     const existing = await ctx.db.get(id);
     if (!existing) throw new ConvexError({ code: "NOT_FOUND", message: "Produit introuvable." });
     const data = await normalizeInput(ctx, args, id);
@@ -550,6 +553,7 @@ export const update = mutation({
       await ctx.db.insert("slugRedirects", { entity: "product", fromSlug: existing.slug, toSlug: data.slug });
     }
     await ctx.db.patch(id, data);
+    await logStock(ctx, { productId: id, delta: data.stock - existing.stock, stockAfter: data.stock, reason: "adjust", note: "Fiche produit", userId: user._id });
     const kept = new Set(data.images.map((i) => i.publicId));
     await scheduleOrphanImageCleanup(
       ctx,
@@ -598,6 +602,12 @@ async function deleteProduct(ctx: MutationCtx, id: Id<"products">) {
     .withIndex("by_product_day", (q) => q.eq("productId", id))
     .collect();
   for (const v of views) await ctx.db.delete(v._id);
+  const linked = await Promise.all([
+    ctx.db.query("wishlists").withIndex("by_product", (q) => q.eq("productId", id)).collect(),
+    ctx.db.query("reviews").withIndex("by_product_status", (q) => q.eq("productId", id)).collect(),
+    ctx.db.query("stockMovements").withIndex("by_product", (q) => q.eq("productId", id)).collect(),
+  ]);
+  for (const rows of linked) for (const r of rows) await ctx.db.delete(r._id);
   return p.images.map((i) => i.publicId);
 }
 
@@ -672,12 +682,17 @@ export const quickUpdate = mutation({
     stock: v.optional(v.number()),
   },
   handler: async (ctx, { id, ...patch }) => {
-    await requirePermission(ctx, "catalog");
+    const user = await requirePermission(ctx, "catalog");
     if (patch.stock !== undefined && (!Number.isInteger(patch.stock) || patch.stock < 0)) {
       throw new ConvexError({ code: "INVALID", message: "Stock invalide." });
     }
+    const before = await ctx.db.get(id);
+    if (!before) throw new ConvexError({ code: "NOT_FOUND", message: "Produit introuvable." });
     const clean = Object.fromEntries(Object.entries(patch).filter(([, val]) => val !== undefined));
     await ctx.db.patch(id, { ...clean, updatedAt: Date.now() });
+    if (patch.stock !== undefined) {
+      await logStock(ctx, { productId: id, delta: patch.stock - before.stock, stockAfter: patch.stock, reason: "adjust", userId: user._id });
+    }
   },
 });
 

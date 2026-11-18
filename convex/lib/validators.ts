@@ -113,3 +113,41 @@ export const vSectionItem = v.object({
 });
 
 export const vLocale = v.union(v.literal("fr"), v.literal("ar"));
+
+/** A delivery address saved on a customer account. */
+export const vAddress = v.object({
+  id: v.string(),
+  label: v.optional(v.string()),
+  fullName: v.string(),
+  phone: v.string(),
+  city: v.string(),
+  address: v.string(),
+  isDefault: v.boolean(),
+});
+export type SavedAddress = Infer<typeof vAddress>;
+
+export const STOCK_REASONS = ["initial", "sale", "cancel", "reactivate", "adjust", "restock", "loss", "import", "sync"] as const;
+export const vStockReason = v.union(
+  v.literal("initial"),
+  v.literal("sale"),
+  v.literal("cancel"),
+  v.literal("reactivate"),
+  v.literal("adjust"),
+  v.literal("restock"),
+  v.literal("loss"),
+  v.literal("import"),
+  v.literal("sync"),
+);
+export type StockReason = Infer<typeof vStockReason>;
+
+/** Storefront design (see convex/lib/theme.ts for presets and defaults). */
+export const vTheme = v.object({
+  primary: v.string(),
+  dark: v.string(),
+  sale: v.string(),
+  radius: v.number(),
+  font: v.union(v.literal("manrope"), v.literal("inter"), v.literal("poppins"), v.literal("dm-sans")),
+  cardStyle: v.union(v.literal("bordered"), v.literal("elevated"), v.literal("minimal")),
+  headerStyle: v.union(v.literal("light"), v.literal("dark")),
+});
+export type Theme = Infer<typeof vTheme>;

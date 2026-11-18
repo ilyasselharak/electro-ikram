@@ -14,7 +14,9 @@
     "brandTitle": "{brand} — Produits et prix au Maroc",
     "brandDescription": "Tous les produits {brand} disponibles chez Electro-Ikram, livrés partout au Maroc.",
     "brands": "Nos marques",
-    "page": "Page {page}"
+    "page": "Page {page}",
+    "account": "Mon compte",
+    "login": "Connexion"
   },
   "common": {
     "addToCart": "Ajouter au panier",
@@ -64,7 +66,10 @@
     "brands": "Marques",
     "contact": "Contact",
     "switchTo": "العربية",
-    "help": "Aide"
+    "help": "Aide",
+    "account": "Mon compte",
+    "login": "Se connecter",
+    "wishlist": "Liste d'envies"
   },
   "search": {
     "title": "Recherche",
@@ -284,62 +289,140 @@
       "title": "À propos d'Electro-Ikram",
       "description": "Découvrez Electro-Ikram, spécialiste de l'électroménager et de l'électronique au Maroc.",
       "sections": [
-        { "h": "Qui sommes-nous ?", "p": "Electro-Ikram est une enseigne marocaine spécialisée dans l'électroménager et l'électronique grand public. Nous sélectionnons des appareils fiables, issus de marques reconnues, pour équiper votre maison au meilleur prix." },
-        { "h": "Notre engagement", "p": "Des produits neufs couverts par la garantie constructeur, des prix transparents, un conseil honnête avant l'achat et un service après-vente à l'écoute." },
-        { "h": "Livraison et paiement", "p": "Nous livrons dans toutes les villes du Maroc. Vous payez en espèces à la réception de votre commande, après vérification." }
+        {
+          "h": "Qui sommes-nous ?",
+          "p": "Electro-Ikram est une enseigne marocaine spécialisée dans l'électroménager et l'électronique grand public. Nous sélectionnons des appareils fiables, issus de marques reconnues, pour équiper votre maison au meilleur prix."
+        },
+        {
+          "h": "Notre engagement",
+          "p": "Des produits neufs couverts par la garantie constructeur, des prix transparents, un conseil honnête avant l'achat et un service après-vente à l'écoute."
+        },
+        {
+          "h": "Livraison et paiement",
+          "p": "Nous livrons dans toutes les villes du Maroc. Vous payez en espèces à la réception de votre commande, après vérification."
+        }
       ]
     },
     "faq": {
       "title": "Questions fréquentes",
       "description": "Réponses aux questions fréquentes sur les commandes, la livraison, le paiement et la garantie.",
       "items": [
-        { "q": "Comment passer une commande ?", "a": "Ajoutez vos produits au panier puis cliquez sur « Passer la commande ». Renseignez vos coordonnées : notre équipe vous appelle pour confirmer. Vous pouvez aussi commander via WhatsApp depuis chaque fiche produit." },
-        { "q": "Quels sont les modes de paiement ?", "a": "Le paiement se fait en espèces à la livraison (COD). Vous ne payez qu'à la réception de votre commande." },
-        { "q": "Quels sont les délais de livraison ?", "a": "Les délais sont généralement de 24 à 72 heures selon votre ville. Notre équipe vous communique la date prévue lors de la confirmation." },
-        { "q": "Les produits sont-ils garantis ?", "a": "Oui. Tous nos produits sont neufs et couverts par la garantie du fabricant. La durée est indiquée sur chaque fiche produit." },
-        { "q": "Comment suivre ma commande ?", "a": "Rendez-vous sur la page « Suivi de commande » et saisissez votre numéro de commande ainsi que le téléphone utilisé lors de l'achat." },
-        { "q": "Puis-je retourner un produit ?", "a": "Oui, dans les conditions décrites dans notre politique de retour : produit non utilisé, dans son emballage d'origine, signalé dans les 7 jours suivant la livraison." }
+        {
+          "q": "Comment passer une commande ?",
+          "a": "Ajoutez vos produits au panier puis cliquez sur « Passer la commande ». Renseignez vos coordonnées : notre équipe vous appelle pour confirmer. Vous pouvez aussi commander via WhatsApp depuis chaque fiche produit."
+        },
+        {
+          "q": "Quels sont les modes de paiement ?",
+          "a": "Le paiement se fait en espèces à la livraison (COD). Vous ne payez qu'à la réception de votre commande."
+        },
+        {
+          "q": "Quels sont les délais de livraison ?",
+          "a": "Les délais sont généralement de 24 à 72 heures selon votre ville. Notre équipe vous communique la date prévue lors de la confirmation."
+        },
+        {
+          "q": "Les produits sont-ils garantis ?",
+          "a": "Oui. Tous nos produits sont neufs et couverts par la garantie du fabricant. La durée est indiquée sur chaque fiche produit."
+        },
+        {
+          "q": "Comment suivre ma commande ?",
+          "a": "Rendez-vous sur la page « Suivi de commande » et saisissez votre numéro de commande ainsi que le téléphone utilisé lors de l'achat."
+        },
+        {
+          "q": "Puis-je retourner un produit ?",
+          "a": "Oui, dans les conditions décrites dans notre politique de retour : produit non utilisé, dans son emballage d'origine, signalé dans les 7 jours suivant la livraison."
+        }
       ]
     },
     "delivery": {
       "title": "Politique de livraison",
       "description": "Délais, zones et frais de livraison d'Electro-Ikram partout au Maroc.",
       "sections": [
-        { "h": "Zones desservies", "p": "Nous livrons dans toutes les villes du Maroc via notre réseau de livreurs et de transporteurs partenaires." },
-        { "h": "Délais", "p": "Les commandes confirmées sont généralement livrées sous 24 à 72 heures ouvrées. Les gros électroménagers peuvent nécessiter un rendez-vous de livraison." },
-        { "h": "Frais de livraison", "p": "Les frais de livraison sont affichés dans le panier avant validation. La livraison est offerte au-delà du seuil indiqué sur le site." },
-        { "h": "À la réception", "p": "Vérifiez l'état du colis en présence du livreur avant de payer. En cas de dommage visible, refusez le colis et contactez-nous." }
+        {
+          "h": "Zones desservies",
+          "p": "Nous livrons dans toutes les villes du Maroc via notre réseau de livreurs et de transporteurs partenaires."
+        },
+        {
+          "h": "Délais",
+          "p": "Les commandes confirmées sont généralement livrées sous 24 à 72 heures ouvrées. Les gros électroménagers peuvent nécessiter un rendez-vous de livraison."
+        },
+        {
+          "h": "Frais de livraison",
+          "p": "Les frais de livraison sont affichés dans le panier avant validation. La livraison est offerte au-delà du seuil indiqué sur le site."
+        },
+        {
+          "h": "À la réception",
+          "p": "Vérifiez l'état du colis en présence du livreur avant de payer. En cas de dommage visible, refusez le colis et contactez-nous."
+        }
       ]
     },
     "returns": {
       "title": "Retours et remboursements",
       "description": "Conditions de retour, d'échange et de remboursement chez Electro-Ikram.",
       "sections": [
-        { "h": "Délai de retour", "p": "Vous pouvez nous signaler une demande de retour dans les 7 jours suivant la livraison." },
-        { "h": "Conditions", "p": "Le produit doit être non utilisé, complet, dans son emballage d'origine et accompagné de sa facture." },
-        { "h": "Produit défectueux", "p": "En cas de panne couverte par la garantie, contactez-nous : nous vous orientons vers le service après-vente agréé ou procédons à l'échange selon les conditions du fabricant." },
-        { "h": "Remboursement", "p": "Après réception et vérification du produit retourné, le remboursement est effectué dans un délai de 14 jours." }
+        {
+          "h": "Délai de retour",
+          "p": "Vous pouvez nous signaler une demande de retour dans les 7 jours suivant la livraison."
+        },
+        {
+          "h": "Conditions",
+          "p": "Le produit doit être non utilisé, complet, dans son emballage d'origine et accompagné de sa facture."
+        },
+        {
+          "h": "Produit défectueux",
+          "p": "En cas de panne couverte par la garantie, contactez-nous : nous vous orientons vers le service après-vente agréé ou procédons à l'échange selon les conditions du fabricant."
+        },
+        {
+          "h": "Remboursement",
+          "p": "Après réception et vérification du produit retourné, le remboursement est effectué dans un délai de 14 jours."
+        }
       ]
     },
     "privacy": {
       "title": "Politique de confidentialité",
       "description": "Comment Electro-Ikram collecte et protège vos données personnelles.",
       "sections": [
-        { "h": "Données collectées", "p": "Nous collectons uniquement les informations nécessaires au traitement de vos commandes : nom, téléphone, ville, adresse et, si vous le souhaitez, votre e-mail." },
-        { "h": "Utilisation", "p": "Vos données servent à confirmer, livrer et suivre vos commandes, et à vous informer de nos offres si vous vous êtes inscrit à la newsletter." },
-        { "h": "Partage", "p": "Vos données ne sont jamais vendues. Elles sont partagées uniquement avec nos prestataires de livraison, dans la limite nécessaire." },
-        { "h": "Vos droits", "p": "Conformément à la loi 09-08, vous disposez d'un droit d'accès, de rectification et d'opposition. Contactez-nous pour l'exercer." }
+        {
+          "h": "Données collectées",
+          "p": "Nous collectons uniquement les informations nécessaires au traitement de vos commandes : nom, téléphone, ville, adresse et, si vous le souhaitez, votre e-mail."
+        },
+        {
+          "h": "Utilisation",
+          "p": "Vos données servent à confirmer, livrer et suivre vos commandes, et à vous informer de nos offres si vous vous êtes inscrit à la newsletter."
+        },
+        {
+          "h": "Partage",
+          "p": "Vos données ne sont jamais vendues. Elles sont partagées uniquement avec nos prestataires de livraison, dans la limite nécessaire."
+        },
+        {
+          "h": "Vos droits",
+          "p": "Conformément à la loi 09-08, vous disposez d'un droit d'accès, de rectification et d'opposition. Contactez-nous pour l'exercer."
+        }
       ]
     },
     "terms": {
       "title": "Conditions générales de vente",
       "description": "Conditions générales de vente applicables aux commandes passées sur Electro-Ikram.",
       "sections": [
-        { "h": "Objet", "p": "Les présentes conditions régissent les ventes conclues sur le site Electro-Ikram entre la boutique et ses clients." },
-        { "h": "Prix", "p": "Les prix sont indiqués en dirhams marocains (MAD), toutes taxes comprises, hors frais de livraison éventuels affichés avant validation." },
-        { "h": "Commande", "p": "Toute commande est confirmée par téléphone par notre équipe. Electro-Ikram se réserve le droit d'annuler une commande en cas de rupture de stock ou d'informations erronées." },
-        { "h": "Paiement", "p": "Le paiement s'effectue en espèces à la livraison." },
-        { "h": "Garantie", "p": "Les produits bénéficient de la garantie légale et de la garantie constructeur indiquée sur la fiche produit." }
+        {
+          "h": "Objet",
+          "p": "Les présentes conditions régissent les ventes conclues sur le site Electro-Ikram entre la boutique et ses clients."
+        },
+        {
+          "h": "Prix",
+          "p": "Les prix sont indiqués en dirhams marocains (MAD), toutes taxes comprises, hors frais de livraison éventuels affichés avant validation."
+        },
+        {
+          "h": "Commande",
+          "p": "Toute commande est confirmée par téléphone par notre équipe. Electro-Ikram se réserve le droit d'annuler une commande en cas de rupture de stock ou d'informations erronées."
+        },
+        {
+          "h": "Paiement",
+          "p": "Le paiement s'effectue en espèces à la livraison."
+        },
+        {
+          "h": "Garantie",
+          "p": "Les produits bénéficient de la garantie légale et de la garantie constructeur indiquée sur la fiche produit."
+        }
       ]
     }
   },
@@ -356,5 +439,109 @@
     "backHome": "Retour à l'accueil",
     "genericTitle": "Oups, un problème est survenu",
     "genericText": "Veuillez réessayer dans quelques instants."
+  },
+  "auth": {
+    "loginTitle": "Connexion",
+    "registerTitle": "Créer un compte",
+    "loginTab": "Se connecter",
+    "registerTab": "Créer un compte",
+    "subtitle": "Suivez vos commandes, enregistrez vos adresses et votre liste d'envies.",
+    "name": "Nom complet",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "passwordHint": "8 caractères minimum, avec une lettre et un chiffre",
+    "submitLogin": "Se connecter",
+    "submitRegister": "Créer mon compte",
+    "forgot": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "haveAccount": "Déjà un compte ?",
+    "invalid": "E-mail ou mot de passe incorrect.",
+    "exists": "Un compte existe déjà avec cet e-mail.",
+    "weakPassword": "Le mot de passe doit contenir au moins 8 caractères, dont une lettre et un chiffre.",
+    "disabled": "Ce compte est désactivé. Contactez-nous.",
+    "welcome": "Bienvenue, {name} !",
+    "resetTitle": "Réinitialiser le mot de passe",
+    "resetIntro": "Saisissez votre e-mail : nous vous enverrons un code à 8 chiffres.",
+    "sendCode": "Envoyer le code",
+    "code": "Code reçu par e-mail",
+    "newPassword": "Nouveau mot de passe",
+    "resetSubmit": "Changer le mot de passe",
+    "codeSent": "Code envoyé. Vérifiez votre boîte mail.",
+    "resetDone": "Mot de passe modifié. Vous êtes connecté.",
+    "resetFailed": "Code invalide ou expiré.",
+    "backToLogin": "Retour à la connexion",
+    "guestCheckout": "Vous pouvez aussi commander sans compte."
+  },
+  "account": {
+    "title": "Mon compte",
+    "hello": "Bonjour {name}",
+    "memberSince": "Client depuis {date}",
+    "tabs": {
+      "orders": "Mes commandes",
+      "wishlist": "Liste d'envies",
+      "addresses": "Adresses",
+      "profile": "Profil"
+    },
+    "logout": "Se déconnecter",
+    "noOrders": "Vous n'avez pas encore passé de commande avec ce compte.",
+    "startShopping": "Découvrir nos produits",
+    "orderOf": "Commande du {date}",
+    "items": "{count, plural, one {# article} other {# articles}}",
+    "details": "Voir le détail",
+    "hide": "Masquer",
+    "total": "Total",
+    "noAddresses": "Aucune adresse enregistrée.",
+    "addAddress": "Ajouter une adresse",
+    "editAddress": "Modifier l'adresse",
+    "label": "Libellé (Maison, Bureau…)",
+    "default": "Par défaut",
+    "makeDefault": "Définir par défaut",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "saved": "Enregistré",
+    "profileTitle": "Informations personnelles",
+    "phone": "Téléphone",
+    "passwordTitle": "Changer le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "passwordChanged": "Mot de passe modifié",
+    "loginRequired": "Connectez-vous pour accéder à votre compte.",
+    "useAddress": "Utiliser une adresse enregistrée",
+    "saveAddress": "Enregistrer cette adresse dans mon compte",
+    "signedInAs": "Connecté en tant que {email}",
+    "loginForFaster": "Connectez-vous pour pré-remplir vos coordonnées et suivre vos commandes."
+  },
+  "wishlist": {
+    "add": "Ajouter à ma liste d'envies",
+    "remove": "Retirer de ma liste d'envies",
+    "added": "Ajouté à votre liste d'envies",
+    "removed": "Retiré de votre liste d'envies",
+    "loginToSave": "Connectez-vous pour enregistrer vos produits préférés.",
+    "empty": "Votre liste d'envies est vide.",
+    "title": "Liste d'envies"
+  },
+  "reviews": {
+    "title": "Avis clients",
+    "count": "{count, plural, =0 {Aucun avis} one {# avis} other {# avis}}",
+    "basedOn": "Basé sur {count, plural, one {# avis} other {# avis}}",
+    "none": "Aucun avis pour le moment.",
+    "write": "Donner mon avis",
+    "yourRating": "Votre note",
+    "titleLabel": "Titre (facultatif)",
+    "body": "Votre avis",
+    "bodyPlaceholder": "Qualité, utilisation, livraison… (10 caractères minimum)",
+    "submit": "Publier mon avis",
+    "submitted": "Merci ! Votre avis sera publié après vérification.",
+    "pending": "Votre avis est en cours de vérification.",
+    "rejected": "Votre avis n'a pas été publié. Vous pouvez le modifier.",
+    "approved": "Votre avis est publié.",
+    "editMine": "Modifier mon avis",
+    "signIn": "Connectez-vous pour donner votre avis.",
+    "notPurchased": "Seuls les clients ayant reçu ce produit peuvent laisser un avis.",
+    "verified": "Achat vérifié",
+    "storeReply": "Réponse d'Electro-Ikram",
+    "stars": "{count} sur 5"
   }
 }

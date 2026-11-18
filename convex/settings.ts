@@ -1,8 +1,9 @@
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requirePermission } from "./lib/permissions";
 import { DEFAULT_SETTINGS, loadSettings } from "./lib/settings";
-import { vImage } from "./lib/validators";
+import { vImage, vTheme } from "./lib/validators";
+import { isValidTheme } from "./lib/theme";
 import { cleanupReplacedImages } from "./lib/images";
 
 /** Public store settings. Internal fields (notification e-mail) are stripped. */
@@ -105,5 +106,20 @@ export const updateSeo = mutation({
     } else {
       await ctx.db.insert("storeSettings", { ...DEFAULT_SETTINGS, seo, updatedAt: Date.now() });
     }
+  },
+});
+
+/** Admin → Apparence. */
+export const updateTheme = mutation({
+  args: { theme: vTheme },
+  handler: async (ctx, { theme }) => {
+    await requirePermission(ctx, "settings");
+    if (!isValidTheme(theme)) throw new ConvexError({ code: "INVALID", message: "Thème invalide." });
+    const existing = await ctx.db
+      .query("storeSettings")
+      .withIndex("by_key", (q) => q.eq("key", "main"))
+      .unique();
+    if (existing) await ctx.db.patch(existing._id, { theme, updatedAt: Date.now() });
+    else await ctx.db.insert("storeSettings", { ...DEFAULT_SETTINGS, theme, updatedAt: Date.now() });
   },
 });

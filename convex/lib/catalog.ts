@@ -27,6 +27,8 @@ export function toProductCard(p: Doc<"products">, brand?: BrandLite | null) {
     categoryId: p.categoryId,
     brand: brand ? { name: brand.name, slug: brand.slug } : null,
     sku: p.sku,
+    ratingAvg: p.ratingAvg ?? 0,
+    ratingCount: p.ratingCount ?? 0,
   };
 }
 export type ProductCard = ReturnType<typeof toProductCard>;

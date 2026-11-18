@@ -10,6 +10,7 @@ import { CartButton } from "./cart-button";
 import { LanguageSwitcher } from "./language-switcher";
 import { MobileMenu } from "./mobile-menu";
 import { MobileSearch } from "./mobile-search";
+import { AccountButton, WishlistLink } from "./account/account-button";
 
 export function Header({ settings, tree }: { settings: PublicSettings; tree: CategoryNode[] }) {
   const t = useTranslations("header");
@@ -68,6 +69,8 @@ export function Header({ settings, tree }: { settings: PublicSettings; tree: Cat
             <div className="hidden sm:block lg:hidden">
               <LanguageSwitcher className="px-2" />
             </div>
+            <AccountButton />
+            <WishlistLink />
             <CartButton />
           </div>
         </div>

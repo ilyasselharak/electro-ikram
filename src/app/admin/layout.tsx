@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "../globals.css";
 
-const latin = Manrope({ subsets: ["latin"], variable: "--font-latin", display: "swap" });
+const latin = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
 const arabic = IBM_Plex_Sans_Arabic({ subsets: ["arabic"], weight: ["400", "500", "600"], variable: "--font-arabic", display: "swap" });
 
 export const metadata: Metadata = {

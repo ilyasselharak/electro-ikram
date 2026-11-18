@@ -11,6 +11,9 @@ import { ProductGallery } from "@/components/store/product/gallery";
 import { PurchasePanel } from "@/components/store/product/purchase-panel";
 import { ViewTracker } from "@/components/store/product/view-tracker";
 import { RecentlyViewed } from "@/components/store/product/recently-viewed";
+import { ProductReviews } from "@/components/store/product/reviews";
+import { WishlistButton } from "@/components/store/account/wishlist-button";
+import { Stars } from "@/components/store/stars";
 import { Price } from "@/components/store/price";
 import { ProductRail } from "@/components/store/product-grid";
 import { SectionHeader } from "@/components/store/section-header";
@@ -95,6 +98,13 @@ export default async function ProductPage({ params }: Props) {
                 </Link>
               )}
               <h1 className="mt-1.5 text-2xl font-bold leading-tight text-navy sm:text-3xl">{name}</h1>
+              {p.ratingCount > 0 && (
+                <a href="#reviews" className="mt-2 inline-flex items-center gap-2 text-sm hover:text-primary">
+                  <Stars value={p.ratingAvg} />
+                  <span className="font-semibold tabular-nums">{p.ratingAvg.toFixed(1)}</span>
+                  <span className="text-muted-foreground">({t("reviews.count", { count: p.ratingCount })})</span>
+                </a>
+              )}
               <p className="mt-2 text-sm text-muted-foreground">
                 {t("common.sku")} : <span className="font-medium text-foreground" dir="ltr">{p.sku}</span>
               </p>
@@ -131,6 +141,7 @@ export default async function ProductPage({ params }: Props) {
                 stock: p.stock,
               }}
             />
+            <WishlistButton productId={p._id} withLabel className="w-full" />
 
             <ul className="grid grid-cols-2 gap-3 text-sm">
               <li className="flex gap-3 rounded-xl border p-3.5">
@@ -208,6 +219,8 @@ export default async function ProductPage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      <ProductReviews productId={p._id} slug={p.slug} />
 
       {related.length > 0 && (
         <section className="container-page mt-16">

@@ -3,9 +3,10 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
+import { useAdminAction } from "@/hooks/use-admin-mutation";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { ArrowLeft, Ban, CheckCircle2, Mail, MapPin, Phone, Save } from "lucide-react";
+import { ArrowLeft, Ban, CheckCircle2, Heart, Mail, MapPin, Phone, Save, Star, UserRound } from "lucide-react";
 import { Panel } from "@/components/admin/page-header";
 import { OrderStatusBadge } from "@/components/admin/status";
 import { RequirePermission } from "@/components/admin/admin-shell";
@@ -20,11 +21,12 @@ function CustomerDetail({ id }: { id: Id<"customers"> }) {
   const data = useQuery(api.customers.adminGet, { id });
   const saveNotes = useAdminMutation(api.customers.updateNotes, { success: "Notes enregistrées", revalidate: false });
   const setBlocked = useAdminMutation(api.customers.setBlocked, { revalidate: false });
+  const setActive = useAdminAction(api.customers.setAccountActive, { success: "Compte mis à jour" });
   const [notes, setNotes] = useState<string | null>(null);
 
   if (data === undefined) return <Skeleton className="h-96 rounded-2xl" />;
   if (data === null) return <p className="rounded-2xl border bg-white p-10 text-center">Client introuvable.</p>;
-  const { customer: c, orders } = data;
+  const { customer: c, orders, account } = data;
 
   return (
     <div className="space-y-6">
@@ -75,6 +77,28 @@ function CustomerDetail({ id }: { id: Id<"customers"> }) {
               {c.email && <li className="flex gap-2"><Mail className="size-4 text-muted-foreground" />{c.email}</li>}
               <li className="flex gap-2"><MapPin className="size-4 shrink-0 text-muted-foreground" />{c.address}{c.city ? `, ${c.city}` : ""}</li>
             </ul>
+          </Panel>
+          <Panel title="Compte client">
+            {account ? (
+              <div className="space-y-3 text-sm">
+                <p className="flex items-center gap-2"><UserRound className="size-4 text-muted-foreground" /> {account.email}</p>
+                <p className="text-muted-foreground">Inscrit le {dateOnly(account.createdAt)}</p>
+                <div className="flex gap-4">
+                  <span className="flex items-center gap-1.5"><Heart className="size-4 text-muted-foreground" /> {account.wishlistCount} envie(s)</span>
+                  <span className="flex items-center gap-1.5"><Star className="size-4 text-muted-foreground" /> {account.reviewCount} avis</span>
+                </div>
+                <ConfirmDialog
+                  trigger={<Button size="sm" variant={account.isActive ? "outline" : "default"}>{account.isActive ? "Désactiver le compte" : "Réactiver le compte"}</Button>}
+                  title={account.isActive ? "Désactiver ce compte ?" : "Réactiver ce compte ?"}
+                  description={account.isActive ? "Le client sera déconnecté et ne pourra plus se connecter ni commander avec ce compte." : "Le client pourra de nouveau se connecter."}
+                  destructive={account.isActive}
+                  onConfirm={() => setActive.run({ userId: account._id, isActive: !account.isActive })}
+                />
+                {!account.isActive && <p className="text-xs font-semibold text-destructive">Compte désactivé</p>}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Commandes passées sans compte (invité).</p>
+            )}
           </Panel>
           <Panel title="Notes internes">
             <textarea rows={5} className={`${inputClass} h-auto py-2`} value={notes ?? c.notes ?? ""} onChange={(e) => setNotes(e.target.value)} />

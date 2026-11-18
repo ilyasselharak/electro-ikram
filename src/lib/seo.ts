@@ -183,9 +183,11 @@ type ProductForLd = {
   brandDetail: { name: string } | null;
   category: { nameFr: string; nameAr: string } | null;
   warrantyFr?: string;
+  ratingAvg: number;
+  ratingCount: number;
 };
 
-/** Product JSON-LD with an accurate Offer (price in MAD, live availability). No ratings. */
+/** Product JSON-LD with an accurate Offer (price in MAD, live availability) and approved-review rating. */
 export function productJsonLd(base: string, locale: AppLocale, p: ProductForLd, deliveryFee: number) {
   const isAr = locale === "ar";
   const description = (isAr ? p.shortDescriptionAr || p.descriptionAr : p.shortDescriptionFr || p.descriptionFr) || undefined;
@@ -201,6 +203,10 @@ export function productJsonLd(base: string, locale: AppLocale, p: ProductForLd, 
     image: p.images.map((img) => cldUrl(img, { width: 1200 })).filter(Boolean),
     brand: p.brandDetail ? { "@type": "Brand", name: p.brandDetail.name } : undefined,
     category: p.category ? (isAr ? p.category.nameAr : p.category.nameFr) : undefined,
+    aggregateRating:
+      p.ratingCount > 0
+        ? { "@type": "AggregateRating", ratingValue: p.ratingAvg.toFixed(1), reviewCount: p.ratingCount, bestRating: 5, worstRating: 1 }
+        : undefined,
     offers: {
       "@type": "Offer",
       url: `${base}/${locale}/product/${p.slug}`,

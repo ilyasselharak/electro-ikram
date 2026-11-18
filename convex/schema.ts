@@ -12,6 +12,9 @@ import {
   vSectionType,
   vSeo,
   vSpec,
+  vAddress,
+  vStockReason,
+  vTheme,
 } from "./lib/validators";
 
 export default defineSchema({
@@ -29,6 +32,8 @@ export default defineSchema({
     role: v.optional(vRole),
     isActive: v.optional(v.boolean()),
     lastLoginAt: v.optional(v.number()),
+    // Customer accounts (users without a staff role): saved delivery addresses.
+    addresses: v.optional(v.array(vAddress)),
   })
     .index("email", ["email"])
     .index("phone", ["phone"])
@@ -98,6 +103,9 @@ export default defineSchema({
     salesCount: v.number(),
     viewCount: v.number(),
     searchText: v.string(),
+    // Approved reviews aggregate, kept in sync by convex/reviews.ts.
+    ratingAvg: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
     // Electro Darna product id this product was cloned from (stock synced from it).
     sourceId: v.optional(v.string()),
     sourceSyncedAt: v.optional(v.number()),
@@ -135,9 +143,12 @@ export default defineSchema({
     totalOrders: v.number(),
     totalSpent: v.number(),
     lastOrderAt: v.optional(v.number()),
+    // Set when an order was placed while signed in to a customer account.
+    userId: v.optional(v.id("users")),
     searchText: v.string(),
   })
     .index("by_phone", ["phone"])
+    .index("by_user", ["userId"])
     .index("by_last_order", ["lastOrderAt"])
     .searchIndex("search_text", { searchField: "searchText" }),
 
@@ -145,6 +156,8 @@ export default defineSchema({
     orderNumber: v.string(),
     accessToken: v.string(),
     customerId: v.id("customers"),
+    // Customer account that placed the order (absent for guest checkout).
+    userId: v.optional(v.id("users")),
     customer: v.object({
       fullName: v.string(),
       phone: v.string(),
@@ -182,10 +195,49 @@ export default defineSchema({
     .index("by_number", ["orderNumber"])
     .index("by_status", ["status"])
     .index("by_customer", ["customerId"])
+    .index("by_user", ["userId"])
     .searchIndex("search_text", {
       searchField: "searchText",
       filterFields: ["status"],
     }),
+
+  wishlists: defineTable({
+    userId: v.id("users"),
+    productId: v.id("products"),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_product", ["userId", "productId"])
+    .index("by_product", ["productId"]),
+
+  // Customer reviews: only from accounts that received the product; published after moderation.
+  reviews: defineTable({
+    productId: v.id("products"),
+    userId: v.id("users"),
+    authorName: v.string(),
+    rating: v.number(),
+    title: v.optional(v.string()),
+    body: v.string(),
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+    adminReply: v.optional(v.string()),
+    updatedAt: v.number(),
+  })
+    .index("by_product_status", ["productId", "status"])
+    .index("by_status", ["status"])
+    .index("by_user", ["userId"])
+    .index("by_user_product", ["userId", "productId"]),
+
+  // Every stock change, for the inventory history.
+  stockMovements: defineTable({
+    productId: v.id("products"),
+    delta: v.number(),
+    stockAfter: v.number(),
+    reason: vStockReason,
+    note: v.optional(v.string()),
+    orderId: v.optional(v.id("orders")),
+    userId: v.optional(v.id("users")),
+  })
+    .index("by_product", ["productId"])
+    .index("by_reason", ["reason"]),
 
   orderStatusHistory: defineTable({
     orderId: v.id("orders"),
@@ -276,6 +328,8 @@ export default defineSchema({
     businessHoursFr: v.optional(v.string()),
     businessHoursAr: v.optional(v.string()),
     notifyEmail: v.optional(v.string()),
+    // Storefront design, edited in Admin → Apparence.
+    theme: v.optional(vTheme),
     seo: v.object({
       siteTitleFr: v.optional(v.string()),
       siteTitleAr: v.optional(v.string()),
@@ -314,7 +368,7 @@ export default defineSchema({
     .index("by_day", ["day"]),
 
   adminNotifications: defineTable({
-    kind: v.union(v.literal("order"), v.literal("message"), v.literal("stock")),
+    kind: v.union(v.literal("order"), v.literal("message"), v.literal("stock"), v.literal("review")),
     title: v.string(),
     body: v.optional(v.string()),
     link: v.optional(v.string()),

@@ -53,7 +53,8 @@
 }
 
 :root {
-  /* Electro-Ikram design tokens */
+  /* Electro-Ikram design tokens (overridden by the theme saved in Admin → Apparence) */
+  --font-latin: var(--font-manrope);
   --radius: 0.75rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.22 0.035 262);
@@ -154,4 +155,51 @@ html[dir="rtl"] .rtl-flip {
   html[dir="rtl"] h1, html[dir="rtl"] h2, html[dir="rtl"] h3, html[dir="rtl"] h4 {
     letter-spacing: 0;
   }
+}
+
+/* ── Theme variants (Admin → Apparence) ─────────────────────────────── */
+
+/* Product cards */
+html[data-card="elevated"] .product-card {
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgb(15 27 51 / 0.06), 0 8px 24px -12px rgb(15 27 51 / 0.18);
+}
+html[data-card="minimal"] .product-card {
+  border-color: transparent;
+  background: transparent;
+}
+html[data-card="minimal"] .product-card > div:last-child {
+  border-top-color: transparent;
+  padding-inline: 0.25rem;
+}
+
+/* Dark header */
+html[data-header="dark"] header.sticky {
+  background-color: var(--navy);
+  border-color: color-mix(in oklch, white 12%, transparent);
+  color: white;
+}
+html[data-header="dark"] header.sticky :is(a, button):not(.bg-primary):not([class*="bg-primary"]) {
+  color: color-mix(in oklch, white 88%, transparent);
+}
+html[data-header="dark"] header.sticky :is(a, button):hover {
+  background-color: color-mix(in oklch, white 10%, transparent);
+  color: white;
+}
+html[data-header="dark"] header.sticky .border-b,
+html[data-header="dark"] header.sticky .border-t {
+  border-color: color-mix(in oklch, white 12%, transparent);
+}
+html[data-header="dark"] header.sticky .text-muted-foreground {
+  color: color-mix(in oklch, white 65%, transparent);
+}
+html[data-header="dark"] header.sticky .text-sale {
+  color: color-mix(in oklch, var(--sale) 70%, white);
+}
+/* Popovers inside the header keep the light look */
+html[data-header="dark"] header.sticky .bg-popover :is(a, button) {
+  color: var(--foreground);
+}
+html[data-header="dark"] header.sticky .bg-popover .text-muted-foreground {
+  color: var(--muted-foreground);
 }

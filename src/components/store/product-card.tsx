@@ -5,6 +5,8 @@ import type { api } from "@convex/_generated/api";
 import { ProductImage } from "./product-image";
 import { Price } from "./price";
 import { AddToCartButton } from "./add-to-cart-button";
+import { WishlistButton } from "./account/wishlist-button";
+import { Stars } from "./stars";
 import { cn } from "@/lib/utils";
 
 export type ProductCardData = FunctionReturnType<typeof api.products.byIds>[number];
@@ -32,7 +34,7 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_32px_-12px_rgb(15_27_51/0.18)]",
+        "product-card group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_32px_-12px_rgb(15_27_51/0.18)]",
         className,
       )}
     >
@@ -59,6 +61,7 @@ export function ProductCard({
           )}
         </div>
       </Link>
+      <WishlistButton productId={product._id} className="absolute end-2.5 top-2.5 z-10" />
 
       <div className="flex flex-1 flex-col gap-2 border-t border-border/60 p-3.5 sm:p-4">
         {product.brand && (
@@ -69,6 +72,12 @@ export function ProductCard({
             {name}
           </Link>
         </h3>
+        {product.ratingCount > 0 && (
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Stars value={product.ratingAvg} size="xs" />
+            <span className="tabular-nums">({product.ratingCount})</span>
+          </span>
+        )}
         <Price price={product.price} oldPrice={product.oldPrice} locale={locale} size="sm" />
         <p
           className={cn(

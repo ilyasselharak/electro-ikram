@@ -16,6 +16,8 @@ import {
 } from "./lib/utils";
 import { computeDeliveryFee, loadSettings } from "./lib/settings";
 import { evaluateCoupon, findCoupon } from "./coupons";
+import { getAuthUserId } from "@convex-dev/auth/server";
+import { logStock } from "./lib/stock";
 
 const MAX_QTY_PER_LINE = 20;
 const MAX_LINES = 30;
@@ -46,7 +48,7 @@ async function generateOrderNumber(ctx: MutationCtx) {
 }
 
 /** Public projection of an order — no internal notes, no customer id. */
-function toPublicOrder(o: Doc<"orders">, history: Doc<"orderStatusHistory">[]) {
+export function toPublicOrder(o: Doc<"orders">, history: Doc<"orderStatusHistory">[]) {
   return {
     orderNumber: o.orderNumber,
     createdAt: o._creationTime,
@@ -103,6 +105,12 @@ export const create = mutation({
     const notes = clean(args.notes)?.slice(0, 1000);
 
     await rateLimit(ctx, `order:${phone}`, 5, 60 * 60 * 1000);
+
+    // Signed-in customers get the order in their account.
+    const userId = (await getAuthUserId(ctx)) ?? undefined;
+    if (userId && (await ctx.db.get(userId))?.isActive === false) {
+      throw new ConvexError({ code: "BLOCKED", message: "Impossible de passer commande. Contactez-nous." });
+    }
 
     const existingCustomer = await ctx.db
       .query("customers")
@@ -187,10 +195,12 @@ export const create = mutation({
     const total = roundMoney(afterDiscount + deliveryFee);
 
     // 5. Decrement stock atomically (Convex mutations are serializable transactions).
+    const soldMoves: { productId: Id<"products">; delta: number; stockAfter: number }[] = [];
     for (const p of products) {
       const qty = merged.get(p._id)!;
       const newStock = p.stock - qty;
       await ctx.db.patch(p._id, { stock: newStock, salesCount: p.salesCount + qty });
+      soldMoves.push({ productId: p._id, delta: -qty, stockAfter: newStock });
       if (newStock <= p.minStockAlert && p.stock > p.minStockAlert) {
         await ctx.db.insert("adminNotifications", {
           kind: "stock",
@@ -214,6 +224,7 @@ export const create = mutation({
         totalOrders: existingCustomer.totalOrders + 1,
         totalSpent: roundMoney(existingCustomer.totalSpent + total),
         lastOrderAt: Date.now(),
+        userId: userId ?? existingCustomer.userId,
         searchText,
       });
     } else {
@@ -227,6 +238,7 @@ export const create = mutation({
         totalOrders: 1,
         totalSpent: total,
         lastOrderAt: Date.now(),
+        userId,
         searchText,
       });
     }
@@ -238,6 +250,7 @@ export const create = mutation({
       orderNumber,
       accessToken,
       customerId,
+      userId,
       customer: { fullName, phone, city, address, email },
       notes,
       items: lines,
@@ -253,6 +266,7 @@ export const create = mutation({
       updatedAt: Date.now(),
     });
     await ctx.db.insert("orderStatusHistory", { orderId, status: "pending" });
+    for (const m of soldMoves) await logStock(ctx, { ...m, reason: "sale", orderId, note: orderNumber });
     await ctx.db.insert("adminNotifications", {
       kind: "order",
       title: `Nouvelle commande ${orderNumber}`,
@@ -368,7 +382,7 @@ export const adminGet = query({
   },
 });
 
-async function restock(ctx: MutationCtx, order: Doc<"orders">, direction: 1 | -1) {
+async function restock(ctx: MutationCtx, order: Doc<"orders">, direction: 1 | -1, userId?: Id<"users">) {
   for (const item of order.items) {
     const p = await ctx.db.get(item.productId);
     if (!p) continue;
@@ -378,9 +392,19 @@ async function restock(ctx: MutationCtx, order: Doc<"orders">, direction: 1 | -1
         message: `Stock insuffisant pour réactiver la commande : « ${p.nameFr} » (disponible : ${p.stock}).`,
       });
     }
+    const stockAfter = p.stock + direction * item.quantity;
     await ctx.db.patch(p._id, {
-      stock: p.stock + direction * item.quantity,
+      stock: stockAfter,
       salesCount: Math.max(0, p.salesCount - direction * item.quantity),
+    });
+    await logStock(ctx, {
+      productId: p._id,
+      delta: direction * item.quantity,
+      stockAfter,
+      reason: direction === 1 ? "cancel" : "reactivate",
+      orderId: order._id,
+      note: order.orderNumber,
+      userId,
     });
   }
 }
@@ -399,7 +423,7 @@ export const updateStatus = mutation({
     const customer = await ctx.db.get(order.customerId);
 
     if (!wasInactive && willBeInactive && !stockRestored) {
-      await restock(ctx, order, 1);
+      await restock(ctx, order, 1, user._id);
       stockRestored = true;
       if (customer) {
         await ctx.db.patch(customer._id, {
@@ -408,7 +432,7 @@ export const updateStatus = mutation({
         });
       }
     } else if (wasInactive && !willBeInactive && stockRestored) {
-      await restock(ctx, order, -1);
+      await restock(ctx, order, -1, user._id);
       stockRestored = false;
       if (customer) {
         await ctx.db.patch(customer._id, {

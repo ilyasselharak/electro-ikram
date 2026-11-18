@@ -6,6 +6,7 @@ import { requirePermission } from "./lib/permissions";
 import { buildProductSearchText } from "./lib/catalog";
 import { roundMoney, slugify } from "./lib/utils";
 import { uploadFromUrl } from "./cloudinary";
+import { logStock } from "./lib/stock";
 
 /**
  * Link with the Electro Darna shop (its feed: electro-darna/convex/catalogShare.ts).
@@ -175,7 +176,8 @@ export const createClone = internalMutation({
       updatedAt: now,
     };
     const searchText = buildProductSearchText(base, brandName, [category.nameFr, category.nameAr, parent?.nameFr ?? "", parent?.nameAr ?? ""]);
-    await ctx.db.insert("products", { ...base, searchText });
+    const productId = await ctx.db.insert("products", { ...base, searchText });
+    await logStock(ctx, { productId, delta: base.stock, stockAfter: base.stock, reason: "import", note: "Import Electro Darna" });
     return { created: true };
   },
 });
@@ -240,6 +242,7 @@ export const applyStock = internalMutation({
       if (!p) continue;
       if (p.stock !== stock) updated++;
       await ctx.db.patch(id, { stock, sourceSyncedAt: now });
+      await logStock(ctx, { productId: id, delta: stock - p.stock, stockAfter: stock, reason: "sync", note: "Synchro Electro Darna" });
     }
     return updated;
   },
