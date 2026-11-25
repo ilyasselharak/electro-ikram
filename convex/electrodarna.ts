@@ -230,6 +230,32 @@ export const importProducts = action({
   },
 });
 
+// ── Publish imported drafts (terminal) ─────────────────────
+
+/**
+ * Publishes (or, with `undo`, unpublishes) imported products by source id.
+ * Only touches products cloned from Electro Darna; drafts without a photo, price
+ * or stock are left alone. `dryRun` only reports. Nothing else is changed.
+ */
+export const publishImported = internalMutation({
+  args: { sourceIds: v.array(v.string()), undo: v.optional(v.boolean()), dryRun: v.optional(v.boolean()) },
+  handler: async (ctx, { sourceIds, undo, dryRun }) => {
+    const changed: string[] = [];
+    const skipped: string[] = [];
+    for (const sourceId of new Set(sourceIds)) {
+      const p = await ctx.db.query("products").withIndex("by_source", (q) => q.eq("sourceId", sourceId)).first();
+      const ready = p && (undo ? p.status === "published" : p.status === "draft" && p.images.length > 0 && p.price > 0 && p.stock > 0);
+      if (!p || !ready) {
+        skipped.push(p?.nameFr ?? sourceId);
+        continue;
+      }
+      if (!dryRun) await ctx.db.patch(p._id, { status: undo ? "draft" : "published", updatedAt: Date.now() });
+      changed.push(p.nameFr);
+    }
+    return { changed: changed.length, skipped };
+  },
+});
+
 // ── Stock sync ─────────────────────────────────────────────
 
 export const applyStock = internalMutation({
