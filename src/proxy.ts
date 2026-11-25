@@ -1,3 +1,4 @@
+import type { NextFetchEvent, NextRequest } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import {
   convexAuthNextjsMiddleware,
@@ -8,33 +9,45 @@ import { routing } from "./i18n/routing";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+const isAuthRoute = createRouteMatcher(["/admin(.*)", "/api(.*)"]);
 const isAdminPublicRoute = createRouteMatcher(["/admin/login", "/admin/forgot-password"]);
 
-export default convexAuthNextjsMiddleware(
-  async (request, { convexAuth }) => {
-    const { pathname } = request.nextUrl;
+/** Admin pages and the auth API, with the admin session kept in cookies. */
+async function adminProxy(request: NextRequest, event: NextFetchEvent) {
+  let redirect: Response | undefined;
 
-    // Auth API proxy is handled by convexAuthNextjsMiddleware itself.
-    if (pathname.startsWith("/api")) return;
+  const response = await convexAuthNextjsMiddleware(
+    async (req, { convexAuth }) => {
+      const { pathname } = req.nextUrl;
+      // Auth API proxy is handled by convexAuthNextjsMiddleware itself.
+      if (pathname.startsWith("/api")) return;
 
-    if (isAdminRoute(request)) {
       const authenticated = await convexAuth.isAuthenticated();
-      if (isAdminPublicRoute(request)) {
-        if (authenticated) return nextjsMiddlewareRedirect(request, "/admin");
-        return;
-      }
-      if (!authenticated) {
-        return nextjsMiddlewareRedirect(request, `/admin/login?next=${encodeURIComponent(pathname)}`);
+      if (isAdminPublicRoute(req)) {
+        if (authenticated) redirect = nextjsMiddlewareRedirect(req, "/admin");
+      } else if (!authenticated) {
+        redirect = nextjsMiddlewareRedirect(req, `/admin/login?next=${encodeURIComponent(pathname)}`);
       }
       // Role checks happen in Convex on every admin query/mutation.
-      return;
-    }
+      return redirect;
+    },
+    { cookieConfig: { maxAge: 60 * 60 * 24 * 30 } },
+  )(request, event);
 
-    return intlMiddleware(request);
-  },
-  { cookieConfig: { maxAge: 60 * 60 * 24 * 30 } },
-);
+  // When it refreshes or clears the session, Convex Auth replaces our response
+  // with NextResponse.next(), losing the redirect: keep it, with its cookies.
+  if (redirect && response && response !== redirect) {
+    for (const cookie of response.headers.getSetCookie()) redirect.headers.append("set-cookie", cookie);
+    return redirect;
+  }
+  return response;
+}
+
+export default function proxy(request: NextRequest, event: NextFetchEvent) {
+  // The storefront keeps customer sessions in the browser, not in cookies, so
+  // it only needs language routing.
+  return isAuthRoute(request) ? adminProxy(request, event) : intlMiddleware(request);
+}
 
 export const config = {
   // Everything except Next internals, metadata routes and static files.

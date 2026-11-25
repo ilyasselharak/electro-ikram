@@ -59,7 +59,7 @@ export async function buildMetadata(input: PageMetaInput): Promise<Metadata> {
       languages: {
         fr: `${base}/fr${input.path}`,
         ar: `${base}/ar${input.path}`,
-        "x-default": `${base}/fr${input.path}`,
+        "x-default": `${base}/ar${input.path}`,
       },
     },
     openGraph: {
